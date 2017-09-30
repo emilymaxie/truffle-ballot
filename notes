@@ -1,0 +1,10 @@
+Starting wiht the proposal example on the public site for solidity / ethereum,
+lets take that and migrate it to a tested truffle project.
+
+What are some initial lessons learned:
+* constructor parameters
+* how to get the length of an array
+* we cannot just print arrays back from the constract to javascript, need
+  deliberate accessor methods for the individual entries
+* public attributes can be accessed with a call method (promise)
+* these tests are hard to read and gross

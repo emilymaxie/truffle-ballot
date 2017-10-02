@@ -208,7 +208,34 @@ its nice to have a solid integration test suite around the various ways that the
 contract could be used, and it will document nicely how we expect to use the
 contract from a web service.
 
+We'll be writing mocha for our tests here, not quite as pretty as rspec if
+you're coming from the ruby world, but it does the job. Another funny thing is
+that the nature of interacting with these contracts through javascript, more or
+less everything returns a promise, so these do get a bit hard to read over time.
 
+Before we get started, you'll need to fire up the testrpc server. Run `testrpc`
+from your command line. Now you have a local ethereum blockchain running with 10
+example accounts that all hold 100 ethereum a piece for testing purposes.
+
+### Testing our constructor
+```javascript
+contract('Ballot', function(accounts) {
+  it("should initialize the owner as the chairperson", function() {
+    var ballotInstance;
+    return Ballot.deployed().then(function(instance) {
+      ballotInstance = instance;
+      return ballotInstance.chairperson.call();
+    }).then(function(chairperson) {
+      assert.equal(chairperson, accounts[0]);
+    })
+  });
+});
+```
+So, the first thing that you should notice is that we're wrapping this testing
+environment with the `contract` function. I'm assuming that this is a truffle
+specific thing, but the most important piece is the parameter that is passed to
+the callback its running: `accounts`. Here is where we'll have access to each of
+the test accounts that the testrpc server set up for us.
 
 
 

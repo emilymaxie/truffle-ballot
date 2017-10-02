@@ -42,7 +42,7 @@ lets take that and migrate it to a tested truffle project.
 When going through the voting exercise, first thing that I noticed were the data
 and structures that the language affords us.
 
-### _structs_
+### Structs
 
 First off, structs make total sense, you see those more or less anywhere, we're
 pretty much defining a custom data type and storing some things in that.
@@ -76,7 +76,7 @@ Fairly straight forward... Also, you'll see a lot of hexadecimal in solidity
 development, especially when referencing addresses. (Note the address type above,
 that'll be a hex thing)
 
-###_Public Attributes_
+### Public Attributes
 
 Other items to note in the top of this voter contract, we have created three
 public attributes on this contract, chairperson, and proposals. This is where
@@ -88,18 +88,138 @@ mapping(address => Voter) public voters;
 
 Proposal[] public proposals;
 ```
-Some notes here:
 * _chairperson_ is the address of the owner of the contract
 * _voters_ is a mapping of address to Voter structs, so you get a voter by looking
   up their address in that map. If a voter isn't found, it'll return a Voter
   stuct with default empty values.
-* _proposals_, not a huge suprise here, an array of the proposals, referenced by
-  a integer index
+* _proposals_, not a huge surprise here, an array of the proposals, referenced by
+  a integer index. Proposal is a custom struct, also defined in this contract.
+
+### Ballot Constructor
+
+Similar to other languages, the constructor takes arguments and will instantiate
+an instance of this contract. New to solidity though, this doesn't just create
+an instance in memory, rather it creates a transaction or contract that lives on
+the public ethererum blockchain. Also, slightly different from many other
+examples out in the ethereurm ecosystem, notice that this constructor takes in
+an array of names as an argument. More on this later.
+```
+function Ballot(bytes32[] proposalNames) {
+    chairperson = msg.sender;
+    voters[chairperson].weight = 1;
+    for (uint i = 0; i < proposalNames.length; i++) {
+        createProposal(proposalNames[i]);
+    }
+}
+
+function createProposal (bytes32 proposalName) {
+    require(msg.sender == chairperson);
+    proposals.push(Proposal({
+        name: proposalName,
+        voteCount: 0
+    }));
+}
+```
+This constructor does two things:
+* sets the chairperson as the message sender (whoever created this contract)
+* loops over the proposal names and adds them to the list of proposals
+
+In the example on the solidity documentation site, they pushed each proposal
+into the proposals array directly in the constructor. I abstracted it out to
+another function as I wanted to directly test that functionality.
+
+The remainder of the contract is more or less straightforward. There are many
+functions in that either modify or access data. Lets dive into the functionality
+by writing some tests!
+
+## Getting our project setup
+
+As mentioned above, we'll be using the truffle framework for writing tests
+around this contract. Lets create a new truffle project.
+```bash
+# install truffle
+npm install -g truffle
+
+# install local ethereum test enviornmnet
+npm install -g testrpc
+
+# create our project directory
+mkdir ballot
+cd ballot
+
+# initialize the project
+truffle init
+```
+This will give you a new project with the following directory structure:
+```
+├── contracts
+│   ├── ConvertLib.sol
+│   ├── MetaCoin.sol
+│   └── Migrations.sol
+├── migrations
+│   ├── 1_initial_migration.js
+│   └── 2_deploy_contracts.js
+├── test
+│   ├── TestMetacoin.sol
+│   └── metacoin.js
+└── truffle.js
+```
+Go ahead and delete the following files, we won't need them:
+* contracts/ConvertLib.sol
+* contracts/MetaCoin.sol
+* test/TestMetaCoin.sol
+* test/metacoin.js
+
+Now create the Ballot contract in the contracts directory, and paste in the
+example code from the solidty documentation. The starting contract is also
+available on this repository in case the solidity folks ever remove that
+example.
+
+Last, update `migrations/2_deploy_contracts.js` file to only migrate our
+contract, and remove any references to the files that we already deleted.
+
+One note, in the migrations file, that is what will be deploying the contract to
+the ethereum blockchain. If you want to instantiate the contract with some
+default proposals, that is the place. Here is my migration file for example:
+```
+var Ballot = artifacts.require("./Ballot.sol");
+
+module.exports = function(deployer) {
+    deployer.deploy(Ballot, ['example proposal']);
+};
+```
+As you can see, we are creating this Ballot contract here with one proposal:
+'example proposal'.
+
+## Tests
+
+Now, create a file in the tests directory for our ballot, here we will only be
+writing the mocha / JavaScript tests for now. Solidity apparently is rolling out
+its own unit testing utilities, and we'll save exploration there for another
+day. Since we are interacting with the contract through the _testrpc_ server,
+these tests will act as more or less integration tests against this contract.
+There are definitely a few downsides to this method, the primary one for me has
+been not having access to the solidity runtime environment makes debugging
+fairly difficult. I have gotten the error `invalid opcode` more times than I'd
+like to admit, and to me, that's just not a super helpful error message.
+
+The upside for me is that since these contracts do have financial implications,
+its nice to have a solid integration test suite around the various ways that the
+contract could be used, and it will document nicely how we expect to use the
+contract from a web service.
 
 
 
 
 
+
+
+
+
+
+
+NOTES
+==========================================
 What are some initial lessons learned:
 * constructor parameters
 * how to get the length of an array

@@ -99,4 +99,16 @@ contract Ballot {
   function winnerName() constant returns (bytes32 name) {
     name = proposals[winningProposal()].name;
   }
+
+  function getProposalName(uint index) constant returns (bytes32) {
+    require(index < proposals.length);
+    require(index >= 0);
+    return proposals[index].name;
+  }
+
+  function getProposalVoteCount(uint index) constant returns (uint) {
+    require(index < proposals.length);
+    require(index >= 0);
+    return proposals[index].voteCount;
+  }
 }

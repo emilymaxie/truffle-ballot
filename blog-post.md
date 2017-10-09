@@ -1,46 +1,36 @@
 # Learning Solidity by Example
 
-In my limited knowledge of solidity, TDD isn't quite a thing yet in this world,
-however, testing is SUPER important for a smart contract, and there are many
-lessons to be learned by taking some examples and putting them in a test
-harness. While learning any new stack, I find that this is a good approach to
-get started.
-
 I've been educating myself on blockchain and in particular ethereum for about
 the last three weeks; given that, the purpose of this post is to educate an
 experienced programmer on some of the gotcha working with solidty, ethereum and
 the truffle framework.
 
-Once I started getting my feet under me I decided to get back to the
-documentation on the solidty site and work through some examples there, I picked
-the
-[Ballot](https://solidity.readthedocs.io/en/develop/solidity-by-example.html#voting)
-example contract and decided to get it under some test coverage as a learning
-exercise. The example they provide does a nice job of demonstrating some of the
-basics of a contract, however left some gaps for me personally that were
-actually fun to dig in and figure out.
+In my limited knowledge of solidity, TDD isn't quite a thing yet in this world,
+however, testing is SUPER important for a smart contract, and there are many
+lessons to be learned by taking some examples and putting them in a test
+harness.
+
+The following post takes the
+[Ballot Contract](https://solidity.readthedocs.io/en/develop/solidity-by-example.html#voting)
+from the solidity documentation, drops it into truffle project, and reviews some
+of the lessons learned by writing some tests around the methods and interfaces
+that this contract gives us.
+
 
 ## Truffle Framework
 
-The [Truffle Framework](http://truffleframework.com/) seems to be as good of a
-place as any to get started. You can create a shell project really quickly
-utilizing the CLI.  Additionally, it does the hard work of managing your
-contracts, tests and migrations all in one place. The documentation is still
-pretty young, but they do have some decent tutorials on the site.
-
-The other place that I've been going for ethereum knowledge is a variety of
-Udemy classes, which all seam pretty geared around launching an ICO. While
-educational, I feel that most of what I'm learning is how to craft a financial
-product rather than learning really deeply the underlying tools and language,
-but you gotta start somewhere....
-
-Starting with the proposal example on the public site for solidity / ethereum,
-lets take that and migrate it to a tested truffle project.
+The [Truffle Framework](http://truffleframework.com/) gives you a decent working
+enviornment for writing and deploying solidity contracts.  You can create a
+shell project really quickly utilizing the CLI.  Additionally, it does the hard
+work of managing your contracts, tests and migrations all in one place. The
+project is still pretty young, but they do have some decent tutorials and
+documentation on the site.
 
 ## Data Types in our example contract
 
-When going through the voting exercise, first thing that I noticed were the data
-and structures that the language affords us.
+When going through the Ballot contract, it reminded me a lot of a class in
+standard OOP developmet. Apparently they even support inheritance, not
+demonstrated here.
 
 ### Structs
 
@@ -76,11 +66,12 @@ Fairly straight forward... Also, you'll see a lot of hexadecimal in solidity
 development, especially when referencing addresses. (Note the address type above,
 that'll be a hex thing)
 
-### Public Attributes
+### Contract Public Attributes
 
 Other items to note in the top of this voter contract, we have created three
 public attributes on this contract, chairperson, and proposals. This is where
-we'll be storing everything of more or less importance to the contract.
+we'll be storing everything of more or less importance to the contract, our
+state.
 ```
 address public chairperson;
 
@@ -217,40 +208,192 @@ Before we get started, you'll need to fire up the testrpc server. Run `testrpc`
 from your command line. Now you have a local ethereum blockchain running with 10
 example accounts that all hold 100 ethereum a piece for testing purposes.
 
-### Testing our constructor
+### Truffle's Contract Block
 ```javascript
 contract('Ballot', function(accounts) {
-  it("should initialize the owner as the chairperson", function() {
-    var ballotInstance;
-    return Ballot.deployed().then(function(instance) {
-      ballotInstance = instance;
-      return ballotInstance.chairperson.call();
-    }).then(function(chairperson) {
-      assert.equal(chairperson, accounts[0]);
-    })
-  });
+  it('our first test', function() {...});
 });
 ```
 So, the first thing that you should notice is that we're wrapping this testing
-environment with the `contract` function. I'm assuming that this is a truffle
-specific thing, but the most important piece is the parameter that is passed to
-the callback its running: `accounts`. Here is where we'll have access to each of
-the test accounts that the testrpc server set up for us.
+environment with the `contract` function. This is some 'syntastic sugar' that
+truffle provides us. Truffle calls this their "clean room environment", from the
+docs themselves:
+
+> Truffle provides a clean room environment when running your test files.
+> When running your tests against the TestRPC, Truffle will use the TestRPC's
+> advanced snapshotting features to ensure your test files don't share state
+> with each other. When running against other Ethereum clients like go-ethereum,
+> Truffle will re-deploy all of your migrations at the beginning of every test
+> file to ensure you have a fresh set of contracts to test against a clean room
+> environment when running your test files. When running your tests against the
+> TestRPC, Truffle will use the TestRPC's advanced snapshotting features to
+> ensure your test files don't share state with each other. When running against
+> other Ethereum clients like go-ethereum, Truffle will re-deploy all of your
+> migrations at the beginning of every test file to ensure you have a fresh set
+> of contracts to test against.
+
+Need to clean the state? Just create another contract block.
+
+The next thing that you should notice is the `accounts` attribute that is
+provided to the callback in the `contract` block. This is an array of the test
+accounts that TestRPC provides us. `accounts[0]` is the creator of the contract,
+and the rest are all just for testing the various interactions with the contract.
+
+### Testing our constructor
+
+Next, we'll want to test that our constructor was effectively run along with the
+parameters that we defined in our migration file. These pieces should be fairly
+straight forward, as we are only testing that the setup was performed correctly.
+One item here of interest is that accessor methods, defined with the keyword
+`static` in our contracts, will be called using the `.call()` method on that
+given function, and each `call` returns a promise. You'll notice that most of
+the interactions with the contracts return promises. While possibly a nice
+feature in programming a web front end to the contract, it makes our tests a
+little ugly / hard to read (coming from a ruby background at least).
+```javascript
+it("should initialize the owner as the chairperson", function() {
+  var ballotInstance;
+  return Ballot.deployed().then(function(instance) {
+    ballotInstance = instance;
+    return ballotInstance.chairperson.call();
+  }).then(function(chairperson) {
+    assert.equal(chairperson, accounts[0]);
+  })
+});
+
+it("should be initialized with one proposal using the constuctor", function() {
+  var ballotInstance;
+  const FIRST_PROPOSAL_HEX = '46495253542050524f504f53414c';
+  return Ballot.deployed().then(function(instance) {
+    ballotInstance = instance;
+    return ballotInstance.getProposalsCount.call();
+  }).then(function(index) {
+    return ballotInstance.getProposalName.call(index.toNumber() - 1);
+  }).then(function(proposalName) {
+    var str = proposalName.toString();
+    var re = new RegExp(FIRST_PROPOSAL_HEX, 'i');
+
+    assert.match(str, re, "default proposal should have been created during migrations");
+  })
+});
+```
 
 
+### Modifying the state of our contract
+
+A few examples here, mostly more of the same. Note that for issuing a state
+change, we do not call the `call` method, we just call the function directly.
+
+```javascript
+it("can create a proposal on the fly", function() {
+  var ballotInstance;
+  const BILL_FOR_PRESIDENT_HEX = '42696c6c20666f7220707265736964656e74'
+  return Ballot.deployed().then(function(instance) {
+    ballotInstance = instance;
+    return ballotInstance.createProposal("Bill for president");
+  }).then(function() {
+    return ballotInstance.getProposalsCount.call();
+  }).then(function(index) {
+    return ballotInstance.getProposalName.call(index.toNumber() - 1);
+  }).then(function(proposalName) {
+    var str = proposalName.toString();
+    var re = new RegExp(BILL_FOR_PRESIDENT_HEX, 'i');
+
+    assert.match(str, re, "Bill for president was found!");
+  })
+});
+
+it("should allow a user to vote on a proposal", function() {
+  var ballotInstance;
+  var allowedUser = accounts[1];
+  var notAllowedUser = accounts[2];
+  return Ballot.deployed().then(function(instance) {
+    ballotInstance = instance;
+    return ballotInstance.giveRightToVote(allowedUser)
+  }).then(function(txReceipt) {
+    return ballotInstance.getVoterWeight.call(allowedUser);
+  }).then(function(weight) {
+    assert.equal(weight.toNumber(), 1, 'allowed user is registered to vote'); return ballotInstance.getVoterWeight.call(notAllowedUser); }).then(function(weight) {
+    assert.equal(weight.toNumber(), 0, 'a user not registered cannot vote');
+  })
+})
+it("should be able to effectively delegate", function() {
+  return Ballot.deployed().then(function(instance) {
+    ballotInstance = instance;
+    return ballotInstance.giveRightToVote(accounts[3])
+  }).then(function() {
+    return ballotInstance.giveRightToVote(accounts[4])
+  }).then(function(txReceipt) {
+    return ballotInstance.delegate(accounts[3], { from: accounts[4] });
+  }).then(function() {
+    return ballotInstance.getVoterWeight.call(accounts[3]);
+  }).then(function(weight) {
+    assert.equal(weight.toNumber(), 2, "account 1 should be weighted");
+  })
+})
+
+```
+Note on the last test here, we're wanting to specify who is sending the message.
+You can do that easily by passing a object as the last argument in the function
+and specify the address of the sender in the `from` attribute of that object.
+
+### Testing Errors
+
+Since this is a black box test enviroment, the best I could figure to test these
+`require` statements in the contract itself was to ensure that whatever command
+I executed was erroring really hard. So, we just check for errors using the god
+given capabilities of the promises we've come to know and love. Here's a quick
+example of an expected failure:
+
+```javascript
+it("should not allow a voter to delegate to themselves", function() {
+  return Ballot.deployed().then(function(instance) {
+    ballotInstance = instance;
+    return ballotInstance.delegate(accounts[0], { from: accounts[0] });
+  }).then(function() {
+    assert.fail('this should have failed');
+  }, function(e) {
+    // assuming bad opcode error here
+    assert(true, 'we should have hit this point as a failure');
+  })
+})
+```
+
+I do this a few times in the example repository, the key here is to check for
+the failure in the second argument (callback) in the `then` statement. If you
+are using a `catch` block you'll probably get some false positives.
+
+## Accessing Public Attributes on a Contract
+
+So, in writing these tests, there were a number of situations where I wanted to
+test the modifications that I was making to the state of the contract. For the
+most part, I could get what I needed by calling `call` on the given attribute of
+the contract, `chariperson` for example. However when accessing items that are
+in arrays or maps, I had to write some accessor methods since the data
+structures aren't made readily available to the javascript interface. Note the
+following functions:
+* getProposalsCount
+* getVoterWeight
+* winnerName
+
+Additionally, strings are stored as byte arrays under the hood in a solidity
+contract, so when you get them back, you'll be looking at some hexidecimal
+representation of that string (also padded with spaces). If you check the
+tests where I'm verifying the names for the proposals, you'll see that I'm
+referencing the hex value of that string in the tests.  `¯\_(ツ)_/¯` I'm clearly
+not a pro at this yet, and there is almost certainly a better way, or hopefully
+will be here soon...
 
 
+## Conclusion
 
+Truffle seems like a decent framework for writing solidity code, but the testing
+environment leaves a lot to be desired. I understand that this is more or less
+"black-box" testing, but I really hope that it becomes easier to work with
+contract internals in the near future.
 
-
-
-
-NOTES
-==========================================
-What are some initial lessons learned:
-* constructor parameters
-* how to get the length of an array
-* we cannot just print arrays back from the constract to javascript, need
-  deliberate accessor methods for the individual entries
-* public attributes can be accessed with a call method (promise)
-* these tests are hard to read and gross
+I hope that the post was helpful. The ethereum movement is changing fast, and
+there isn't a HUGE body of knowledge out there yet regarding best practices,
+but the underlying technology is hugely inspirational and has potential to
+really change how we think about a large class of applications. I, for one, am
+very excited to see where this DAPP development world goes.

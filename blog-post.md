@@ -15,6 +15,9 @@ In this post, I'll talk about how I took the
 from the Solidity documentation, dropped it into Truffle project, and wrote some tests around the methods and interfaces
 that this contract gives us.
 
+All example code for this project can be found
+[here](https://github.com/bbrock25/truffle-ballot).
+
 
 ## Truffle framework
 
@@ -201,7 +204,7 @@ contract from a web service.
 
 We'll be writing Mocha for our tests here, not quite as pretty as RSpec if
 you're coming from the Ruby world, but it does the job. Another funny thing is
-that the nature of interacting with these contracts through JavaScript, most everything 
+that the nature of interacting with these contracts through JavaScript, most everything
 returns a promise, so these do get a bit hard to read over time.
 
 Before we get started, you'll need to fire up the testrpc server. Run `testrpc`
@@ -341,7 +344,7 @@ and specifying the address of the sender in the `from` attribute of that object.
 
 Since this is a black box test enviroment, the best I could figure to test these
 `require` statements in the contract itself was to ensure that whatever command
-I executed was erroring really hard. So, we just check for errors using the God-given 
+I executed was erroring really hard. So, we just check for errors using the God-given
 capabilities of the promises we've come to know and love. Here's a quick
 example of an expected failure:
 

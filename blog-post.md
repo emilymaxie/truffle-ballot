@@ -1,34 +1,33 @@
 # Learning Solidity by Example
 
-I've been educating myself on blockchain and in particular ethereum for about
-the last three weeks; given that, the purpose of this post is to educate an
-experienced programmer on some of the gotcha working with solidty, ethereum and
-the truffle framework.
+I've been educating myself on blockchain — and in particular ethereum — for
+several weeks weeks. I'm writing this post to educate other
+experienced programmers on some of the "gotchas" of working with Solidty, Ethereum and
+the Truffle framework.
 
-In my limited knowledge of solidity, TDD isn't quite a thing yet in this world,
-however, testing is SUPER important for a smart contract, and there are many
+In my limited experience with Solidity, TDD isn't quite a thing yet in this world.
+However, testing is _super_ important for a smart contract, and there are many
 lessons to be learned by taking some examples and putting them in a test
 harness.
 
-The following post takes the
+In this post, I'll talk about how I took the
 [Ballot Contract](https://solidity.readthedocs.io/en/develop/solidity-by-example.html#voting)
-from the solidity documentation, drops it into truffle project, and reviews some
-of the lessons learned by writing some tests around the methods and interfaces
+from the Solidity documentation, dropped it into Truffle project, and wrote some tests around the methods and interfaces
 that this contract gives us.
 
 
-## Truffle Framework
+## Truffle framework
 
-The [Truffle Framework](http://truffleframework.com/) gives you a decent working
-enviornment for writing and deploying solidity contracts.  You can create a
-shell project really quickly utilizing the CLI.  Additionally, it does the hard
+The [Truffle framework](http://truffleframework.com/) gives you a decent working
+enviornment for writing and deploying Solidity contracts. You can create a
+shell project really quickly utilizing the CLI. Additionally, it does the hard
 work of managing your contracts, tests and migrations all in one place. The
-project is still pretty young, but they do have some decent tutorials and
+project is still pretty young, but they have some decent tutorials and
 documentation on the site.
 
-## Data Types in our example contract
+## Data types in our example contract
 
-When going through the Ballot contract, it reminded me a lot of a class in
+When going through the Ballot Contract, it reminded me a lot of a class in
 standard OOP developmet. Apparently they even support inheritance, not
 demonstrated here.
 
@@ -45,9 +44,9 @@ struct Voter {
   uint vote;
 }
 ```
-Pretty much what you see is what you get here, you can create a struct and
-assign these attribtues to that and there you have it, data. You can create a
-new Voter and access the attributes like so:
+Pretty much what you see is what you get here. You can create a struct and
+assign these attribtues to it, and there you have it, data. You can create a
+new Voter and access the attributes like this:
 ```
 voter_a = Voter({
     weight: 1,
@@ -62,14 +61,14 @@ if (voter_a.voted) {
     // do another thing
 }
 ```
-Fairly straight forward... Also, you'll see a lot of hexadecimal in solidity
+Fairly straight forward... Also, you'll see a lot of hexadecimal in Solidity
 development, especially when referencing addresses. (Note the address type above,
-that'll be a hex thing)
+that'll be a hex thing.)
 
-### Contract Public Attributes
+### Contract public attributes
 
 Other items to note in the top of this voter contract, we have created three
-public attributes on this contract, chairperson, and proposals. This is where
+public attributes on this: contract, chairperson, and proposals. This is where
 we'll be storing everything of more or less importance to the contract, our
 state.
 ```
@@ -86,13 +85,13 @@ Proposal[] public proposals;
 * _proposals_, not a huge surprise here, an array of the proposals, referenced by
   a integer index. Proposal is a custom struct, also defined in this contract.
 
-### Ballot Constructor
+### Ballot constructor
 
-Similar to other languages, the constructor takes arguments and will instantiate
-an instance of this contract. New to solidity though, this doesn't just create
+Like other languages, the constructor takes arguments and will instantiate
+an instance of this contract. However, with Solidity this doesn't just create
 an instance in memory, rather it creates a transaction or contract that lives on
-the public ethererum blockchain. Also, slightly different from many other
-examples out in the ethereurm ecosystem, notice that this constructor takes in
+the public Ethererum blockchain. Also, slightly different from many other
+examples out in the Ethereurm ecosystem, notice that this constructor takes in
 an array of names as an argument. More on this later.
 ```
 function Ballot(bytes32[] proposalNames) {
@@ -112,21 +111,21 @@ function createProposal (bytes32 proposalName) {
 }
 ```
 This constructor does two things:
-* sets the chairperson as the message sender (whoever created this contract)
-* loops over the proposal names and adds them to the list of proposals
+* Sets the chairperson as the message sender (whoever created this contract)
+* Loops over the proposal names and adds them to the list of proposals
 
-In the example on the solidity documentation site, they pushed each proposal
+In the example on the Solidity documentation site, they pushed each proposal
 into the proposals array directly in the constructor. I abstracted it out to
-another function as I wanted to directly test that functionality.
+another function because I wanted to directly test that functionality.
 
 The remainder of the contract is more or less straightforward. There are many
-functions in that either modify or access data. Lets dive into the functionality
+functions that either modify or access data. Lets dive into the functionality
 by writing some tests!
 
-## Getting our project setup
+## Getting our project set up
 
-As mentioned above, we'll be using the truffle framework for writing tests
-around this contract. Lets create a new truffle project.
+As mentioned above, we'll be using the Truffle framework for writing tests
+around this contract. Let's create a new Truffle project.
 ```bash
 # install truffle
 npm install -g truffle
@@ -161,17 +160,17 @@ Go ahead and delete the following files, we won't need them:
 * test/TestMetaCoin.sol
 * test/metacoin.js
 
-Now create the Ballot contract in the contracts directory, and paste in the
-example code from the solidty documentation. The starting contract is also
-available on this repository in case the solidity folks ever remove that
+Now create the Ballot contract in the contracts directory, and paste the
+example code from the Solidty documentation into it. The starting contract is also
+available on this repository in case the Solidity folks ever remove that
 example.
 
-Last, update `migrations/2_deploy_contracts.js` file to only migrate our
+Last, update the `migrations/2_deploy_contracts.js` file to only migrate our
 contract, and remove any references to the files that we already deleted.
 
-One note, in the migrations file, that is what will be deploying the contract to
-the ethereum blockchain. If you want to instantiate the contract with some
-default proposals, that is the place. Here is my migration file for example:
+Note that in the migrations file, that is what will be deploying the contract to
+the Ethereum blockchain. If you want to instantiate the contract with some
+default proposals, that's the place. Here is my migration file for example:
 ```
 var Ballot = artifacts.require("./Ballot.sol");
 
@@ -179,36 +178,37 @@ module.exports = function(deployer) {
     deployer.deploy(Ballot, ['example proposal']);
 };
 ```
-As you can see, we are creating this Ballot contract here with one proposal:
+As you can see, we are creating this Ballot contract with one proposal:
 'example proposal'.
 
 ## Tests
 
-Now, create a file in the tests directory for our ballot, here we will only be
-writing the mocha / JavaScript tests for now. Solidity apparently is rolling out
+Now, create a file in the tests directory for our ballot. Here we will only be
+writing the Mocha / JavaScript tests for now. Solidity apparently is rolling out
 its own unit testing utilities, and we'll save exploration there for another
 day. Since we are interacting with the contract through the _testrpc_ server,
-these tests will act as more or less integration tests against this contract.
-There are definitely a few downsides to this method, the primary one for me has
-been not having access to the solidity runtime environment makes debugging
+these tests will act more or less as integration tests against this contract.
+
+There are definitely a few downsides to this method. The biggest drawback for me was
+not having access to the Solidity runtime environment, making debugging
 fairly difficult. I have gotten the error `invalid opcode` more times than I'd
 like to admit, and to me, that's just not a super helpful error message.
 
-The upside for me is that since these contracts do have financial implications,
-its nice to have a solid integration test suite around the various ways that the
+The upside is that since these contracts do have financial implications,
+it's nice to have a solid integration test suite around the various ways that the
 contract could be used, and it will document nicely how we expect to use the
 contract from a web service.
 
-We'll be writing mocha for our tests here, not quite as pretty as rspec if
-you're coming from the ruby world, but it does the job. Another funny thing is
-that the nature of interacting with these contracts through javascript, more or
-less everything returns a promise, so these do get a bit hard to read over time.
+We'll be writing Mocha for our tests here, not quite as pretty as RSpec if
+you're coming from the Ruby world, but it does the job. Another funny thing is
+that the nature of interacting with these contracts through JavaScript, most everything 
+returns a promise, so these do get a bit hard to read over time.
 
 Before we get started, you'll need to fire up the testrpc server. Run `testrpc`
-from your command line. Now you have a local ethereum blockchain running with 10
-example accounts that all hold 100 ethereum a piece for testing purposes.
+from your command line. Now you have a local Ethereum blockchain running with 10
+example accounts that all hold 100 Ethereum apiece for testing purposes.
 
-### Truffle's Contract Block
+### Truffle's contract block
 ```javascript
 contract('Ballot', function(accounts) {
   it('our first test', function() {...});
@@ -216,7 +216,7 @@ contract('Ballot', function(accounts) {
 ```
 So, the first thing that you should notice is that we're wrapping this testing
 environment with the `contract` function. This is some 'syntastic sugar' that
-truffle provides us. Truffle calls this their "clean room environment", from the
+Truffle provides us. Truffle calls this their "clean room environment," from the
 docs themselves:
 
 > Truffle provides a clean room environment when running your test files.
@@ -243,13 +243,13 @@ and the rest are all just for testing the various interactions with the contract
 
 Next, we'll want to test that our constructor was effectively run along with the
 parameters that we defined in our migration file. These pieces should be fairly
-straight forward, as we are only testing that the setup was performed correctly.
+straightforward, as we are only testing that the setup was performed correctly.
 One item here of interest is that accessor methods, defined with the keyword
 `static` in our contracts, will be called using the `.call()` method on that
 given function, and each `call` returns a promise. You'll notice that most of
 the interactions with the contracts return promises. While possibly a nice
 feature in programming a web front end to the contract, it makes our tests a
-little ugly / hard to read (coming from a ruby background at least).
+little ugly / hard to read (coming from a Ruby background, at least).
 ```javascript
 it("should initialize the owner as the chairperson", function() {
   var ballotInstance;
@@ -281,7 +281,7 @@ it("should be initialized with one proposal using the constuctor", function() {
 
 ### Modifying the state of our contract
 
-A few examples here, mostly more of the same. Note that for issuing a state
+Here are a few more examples. Note that for issuing a state
 change, we do not call the `call` method, we just call the function directly.
 
 ```javascript
@@ -333,16 +333,16 @@ it("should be able to effectively delegate", function() {
 })
 
 ```
-Note on the last test here, we're wanting to specify who is sending the message.
-You can do that easily by passing a object as the last argument in the function
-and specify the address of the sender in the `from` attribute of that object.
+On the last test here, we're wanting to specify who is sending the message.
+You can do that easily by passing an object as the last argument in the function
+and specifying the address of the sender in the `from` attribute of that object.
 
-### Testing Errors
+### Testing errors
 
 Since this is a black box test enviroment, the best I could figure to test these
 `require` statements in the contract itself was to ensure that whatever command
-I executed was erroring really hard. So, we just check for errors using the god
-given capabilities of the promises we've come to know and love. Here's a quick
+I executed was erroring really hard. So, we just check for errors using the God-given 
+capabilities of the promises we've come to know and love. Here's a quick
 example of an expected failure:
 
 ```javascript
@@ -363,7 +363,7 @@ I do this a few times in the example repository, the key here is to check for
 the failure in the second argument (callback) in the `then` statement. If you
 are using a `catch` block you'll probably get some false positives.
 
-## Accessing Public Attributes on a Contract
+## Accessing public attributes on a contract
 
 So, in writing these tests, there were a number of situations where I wanted to
 test the modifications that I was making to the state of the contract. For the
@@ -382,18 +382,18 @@ representation of that string (also padded with spaces). If you check the
 tests where I'm verifying the names for the proposals, you'll see that I'm
 referencing the hex value of that string in the tests.  `¯\_(ツ)_/¯` I'm clearly
 not a pro at this yet, and there is almost certainly a better way, or hopefully
-will be here soon...
+will be here soon.
 
 
 ## Conclusion
 
-Truffle seems like a decent framework for writing solidity code, but the testing
+Truffle seems like a decent framework for writing Solidity code, but the testing
 environment leaves a lot to be desired. I understand that this is more or less
 "black-box" testing, but I really hope that it becomes easier to work with
 contract internals in the near future.
 
-I hope that the post was helpful. The ethereum movement is changing fast, and
-there isn't a HUGE body of knowledge out there yet regarding best practices,
-but the underlying technology is hugely inspirational and has potential to
+I hope that the post was helpful. The Ethereum movement is changing fast, and
+there isn't a _huge_ body of knowledge out there yet regarding best practices.
+But the underlying technology is hugely inspirational and has potential to
 really change how we think about a large class of applications. I, for one, am
-very excited to see where this DAPP development world goes.
+very excited to see where this DApp development world goes.

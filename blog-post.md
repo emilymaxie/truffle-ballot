@@ -1,8 +1,8 @@
 # Learning Solidity by Example
 
-I've been educating myself on blockchain — and in particular ethereum — for
+I've been educating myself on blockchain — and in particular Ethereum — for
 several weeks weeks. I'm writing this post to educate other
-experienced programmers on some of the "gotchas" of working with Solidty, Ethereum and
+experienced programmers on some of the "gotchas" of working with Solidity, Ethereum and
 the Truffle framework.
 
 In my limited experience with Solidity, TDD isn't quite a thing yet in this world.
@@ -22,7 +22,7 @@ All example code for this project can be found
 ## Truffle framework
 
 The [Truffle framework](http://truffleframework.com/) gives you a decent working
-enviornment for writing and deploying Solidity contracts. You can create a
+environment for writing and deploying Solidity contracts. You can create a
 shell project really quickly utilizing the CLI. Additionally, it does the hard
 work of managing your contracts, tests and migrations all in one place. The
 project is still pretty young, but they have some decent tutorials and
@@ -31,7 +31,7 @@ documentation on the site.
 ## Data types in our example contract
 
 When going through the Ballot Contract, it reminded me a lot of a class in
-standard OOP developmet. Apparently they even support inheritance, not
+standard OOP development. Apparently they even support inheritance, not
 demonstrated here.
 
 ### Structs
@@ -48,7 +48,7 @@ struct Voter {
 }
 ```
 Pretty much what you see is what you get here. You can create a struct and
-assign these attribtues to it, and there you have it, data. You can create a
+assign these attributes to it, and there you have it, data. You can create a
 new Voter and access the attributes like this:
 ```
 voter_a = Voter({
@@ -64,7 +64,7 @@ if (voter_a.voted) {
     // do another thing
 }
 ```
-Fairly straight forward... Also, you'll see a lot of hexadecimal in Solidity
+Fairly straightforward... Also, you'll see a lot of hexadecimal in Solidity
 development, especially when referencing addresses. (Note the address type above,
 that'll be a hex thing.)
 
@@ -84,7 +84,7 @@ Proposal[] public proposals;
 * _chairperson_ is the address of the owner of the contract
 * _voters_ is a mapping of address to Voter structs, so you get a voter by looking
   up their address in that map. If a voter isn't found, it'll return a Voter
-  stuct with default empty values.
+  struct with default empty values.
 * _proposals_, not a huge surprise here, an array of the proposals, referenced by
   a integer index. Proposal is a custom struct, also defined in this contract.
 
@@ -93,8 +93,8 @@ Proposal[] public proposals;
 Like other languages, the constructor takes arguments and will instantiate
 an instance of this contract. However, with Solidity this doesn't just create
 an instance in memory, rather it creates a transaction or contract that lives on
-the public Ethererum blockchain. Also, slightly different from many other
-examples out in the Ethereurm ecosystem, notice that this constructor takes in
+the public Ethereum blockchain. Also, slightly different from many other
+examples out in the Ethereum ecosystem, notice that this constructor takes in
 an array of names as an argument. More on this later.
 ```
 function Ballot(bytes32[] proposalNames) {
@@ -133,7 +133,7 @@ around this contract. Let's create a new Truffle project.
 # install truffle
 npm install -g truffle
 
-# install local ethereum test enviornmnet
+# install local ethereum test environment
 npm install -g testrpc
 
 # create our project directory
@@ -164,7 +164,7 @@ Go ahead and delete the following files, we won't need them:
 * test/metacoin.js
 
 Now create the Ballot contract in the contracts directory, and paste the
-example code from the Solidty documentation into it. The starting contract is also
+example code from the Solidity documentation into it. The starting contract is also
 available on this repository in case the Solidity folks ever remove that
 example.
 
@@ -264,7 +264,7 @@ it("should initialize the owner as the chairperson", function() {
   })
 });
 
-it("should be initialized with one proposal using the constuctor", function() {
+it("should be initialized with one proposal using the constructor", function() {
   var ballotInstance;
   const FIRST_PROPOSAL_HEX = '46495253542050524f504f53414c';
   return Ballot.deployed().then(function(instance) {
@@ -342,7 +342,7 @@ and specifying the address of the sender in the `from` attribute of that object.
 
 ### Testing errors
 
-Since this is a black box test enviroment, the best I could figure to test these
+Since this is a black box test environment, the best I could figure to test these
 `require` statements in the contract itself was to ensure that whatever command
 I executed was erroring really hard. So, we just check for errors using the God-given
 capabilities of the promises we've come to know and love. Here's a quick
@@ -371,7 +371,7 @@ are using a `catch` block you'll probably get some false positives.
 So, in writing these tests, there were a number of situations where I wanted to
 test the modifications that I was making to the state of the contract. For the
 most part, I could get what I needed by calling `call` on the given attribute of
-the contract, `chariperson` for example. However when accessing items that are
+the contract, `chairperson` for example. However when accessing items that are
 in arrays or maps, I had to write some accessor methods since the data
 structures aren't made readily available to the javascript interface. Note the
 following functions:
@@ -380,7 +380,7 @@ following functions:
 * winnerName
 
 Additionally, strings are stored as byte arrays under the hood in a solidity
-contract, so when you get them back, you'll be looking at some hexidecimal
+contract, so when you get them back, you'll be looking at some hexadecimal
 representation of that string (also padded with spaces). If you check the
 tests where I'm verifying the names for the proposals, you'll see that I'm
 referencing the hex value of that string in the tests.  `¯\_(ツ)_/¯` I'm clearly
